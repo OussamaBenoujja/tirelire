@@ -1,4 +1,2 @@
-.vscode 
-nodemodules
-.env
-
+*.csv
+*.sh
