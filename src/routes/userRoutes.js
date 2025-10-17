@@ -135,6 +135,8 @@ const {
   loginUser,
   getProfile,
   submitVerification,
+  stripeOnboard,
+  stripeComplete
 } = require("../controllers/userController");
 const authMiddleware = require("../middlewares/auth");
 
@@ -403,5 +405,9 @@ router.get("/me", authMiddleware, getProfile);
  *         description: Unauthorized
  */
 router.post("/verification", authMiddleware, submitVerification);
+
+// Stripe Connect onboarding endpoints
+router.post('/stripe/onboard', authMiddleware, stripeOnboard);
+router.get('/stripe/complete', authMiddleware, stripeComplete);
 
 module.exports = router;

@@ -3,22 +3,24 @@ const bcrypt = require('bcrypt');
 const Schema = mongoose.Schema;
 
 const userSchema = new Schema(
-	{
-		first_Name: { type: String, required: true, trim: true },
-		last_Name: { type: String, required: true, trim: true },
-		email: { type: String, required: true, unique: true, lowercase: true, trim: true },
-		adress: { type: String, minlength: 6, trim: true },
-		password: { type: String, required: true, minlength: 6, select: false },
-		role: { type: String, enum: ['user', 'admin'], default: 'user' },
-		isActive: { type: Boolean, default: true },
-		activeGroup: { type: Schema.Types.ObjectId, ref: 'Group', default: null },
-		outstandingContributionCount: { type: Number, default: 0 },
-		verification_type: { type: String, enum: ['passport', 'driving license', 'national ID card'] },
-		verification_id: { type: String },
-		isVerified: { type: Boolean, default: false },
-		verify_card_Image: { type: String },
-		verificationSelfie: { type: String }
-	},
+   {
+	   first_Name: { type: String, required: true, trim: true },
+	   last_Name: { type: String, required: true, trim: true },
+	   email: { type: String, required: true, unique: true, lowercase: true, trim: true },
+	   adress: { type: String, minlength: 6, trim: true },
+	   password: { type: String, required: true, minlength: 6, select: false },
+	   role: { type: String, enum: ['user', 'admin'], default: 'user' },
+	   isActive: { type: Boolean, default: true },
+	   activeGroup: { type: Schema.Types.ObjectId, ref: 'Group', default: null },
+	   outstandingContributionCount: { type: Number, default: 0 },
+	   verification_type: { type: String, enum: ['passport', 'driving license', 'national ID card'] },
+	   verification_id: { type: String },
+	   isVerified: { type: Boolean, default: false },
+	   verify_card_Image: { type: String },
+	   verificationSelfie: { type: String },
+	   stripeAccountId: { type: String },
+	   stripeOnboarded: { type: Boolean, default: false }
+   },
 	{ timestamps: true }
 );
 

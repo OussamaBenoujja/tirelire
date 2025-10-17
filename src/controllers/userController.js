@@ -159,17 +159,72 @@ async function submitVerification(req, res){
 	}
 }
 
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const User = require('../models/User');
+
+// Stripe Connect onboarding: create account and return onboarding link
+async function stripeOnboard(req, res) {
+	try {
+		const userId = req.user._id;
+		let user = await User.findById(userId);
+		if (!user) return res.status(404).json({ error: 'User not found' });
+
+		// Create Stripe account if not exists
+		if (!user.stripeAccountId) {
+			const account = await stripe.accounts.create({
+				type: 'express',
+				email: user.email,
+			});
+			user.stripeAccountId = account.id;
+			await user.save();
+		}
+
+		// Create account link for onboarding
+		const accountLink = await stripe.accountLinks.create({
+			account: user.stripeAccountId,
+			refresh_url: process.env.STRIPE_REFRESH_URL || 'https://yourapp.com/stripe/refresh',
+			return_url: process.env.STRIPE_RETURN_URL || 'https://yourapp.com/stripe/complete',
+			type: 'account_onboarding',
+		});
+		res.json({ url: accountLink.url });
+	} catch (err) {
+		res.status(500).json({ error: err.message });
+	}
+}
+
+// Stripe Connect: handle redirect after onboarding
+async function stripeComplete(req, res) {
+	try {
+		const userId = req.user._id;
+		let user = await User.findById(userId);
+		if (!user) return res.status(404).json({ error: 'User not found' });
+		// Optionally, check account status
+		const account = await stripe.accounts.retrieve(user.stripeAccountId);
+		if (account.details_submitted) {
+			user.stripeOnboarded = true;
+			await user.save();
+			res.json({ success: true, stripeAccountId: user.stripeAccountId });
+		} else {
+			res.json({ success: false, message: 'Onboarding incomplete' });
+		}
+	} catch (err) {
+		res.status(500).json({ error: err.message });
+	}
+}
+
 module.exports = {
-	registerUser,
-	loginUser,
-	getProfile,
-	submitVerification
-	,manualVerificationReview
-	,listManualVerifications
-	,listNotifications
-	,markNotificationsRead
-	,openTicket
-	,listMyTickets
-	,listAllTickets
-	,respondTicket
+	 registerUser,
+	 loginUser,
+	 getProfile,
+	 submitVerification
+	 ,manualVerificationReview
+	 ,listManualVerifications
+	 ,listNotifications
+	 ,markNotificationsRead
+	 ,openTicket
+	 ,listMyTickets
+	 ,listAllTickets
+	 ,respondTicket
+	 ,stripeOnboard
+	 ,stripeComplete
 };
